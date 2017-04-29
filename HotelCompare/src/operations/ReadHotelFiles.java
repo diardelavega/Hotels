@@ -51,8 +51,7 @@ public class ReadHotelFiles {
 			// System.out.println(jobj.getAsJsonArray("Reviews"));
 			JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
 			for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
-				// System.out.println(es.getKey()+" :
-				// "+gson.fromJson(es.getValue(), String.class));
+				 System.out.println(es.getKey()+" : "+gson.fromJson(es.getValue(), String.class));
 			}
 
 			// for( JsonElement arrelem:jobj.getAsJsonArray("Reviews")){
