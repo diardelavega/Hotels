@@ -3,8 +3,16 @@ package objects;
 /**
  * @author Administrator
  *
- *         count the times a property has been mentioned from the data & the
- *         value assigned to that property by the user.
+ *         To keep count of the properties that the hotel is evaluated with
+ *         points in the reviews, like: ["Cleanliness","Sleep Quality",
+ *         "Overall", "Service", ...] . Get all of them from the data files and
+ *         aggregate them to produce more information for a hotel. For every
+ *         different attribute that an evaluation has been given, count how many
+ *         times this attribute has been mentioned by a client (not every
+ *         attribute is mentioned in every review) and add up the points that it
+ *         has been awarded.
+ * 
+ * 
  */
 public class CountNValue {
 
@@ -26,17 +34,9 @@ public class CountNValue {
 		return propertyCount;
 	}
 
-	// public void setPropertyCount(int propertyCount) {
-	// this.propertyCount = propertyCount;
-	// }
-
 	public double getValueSum() {
 		return valueSum;
 	}
-
-	// public void setValueSum(double valueSum) {
-	// this.valueSum = valueSum;
-	// }
 
 	public double properyAvgPoint() {
 		return valueSum / propertyCount;

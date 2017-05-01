@@ -15,9 +15,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
+import objects.CountNValue;
+import objects.HotelInfo;
 import objects.HotelObj;
+import objects.TopicSentiment;
 
-public class ReadHotelFiles {
+public class ReadHotelFiles implements ReadData{
 
 	private final String folderPath;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -110,5 +113,23 @@ public class ReadHotelFiles {
 	
 	private String filemaker(String f) {
 		return folderPath + "/" + f;
+	}
+
+	@Override
+	public HotelInfo getHotelInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, CountNValue> getAttributes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, TopicSentiment> getTopicMap() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
