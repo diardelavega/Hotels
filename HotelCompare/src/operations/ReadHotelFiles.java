@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -20,20 +21,32 @@ import objects.HotelInfo;
 import objects.HotelObj;
 import objects.TopicSentiment;
 
-public class ReadHotelFiles implements ReadData{
+/**
+ * @author Administrator
+ * 
+ *         This Class is utilized to read the data from the file and search for
+ *         the topic requested by the user. All the file has to be read to
+ *         search in the comments for the topic.
+ * 
+ */
+public class ReadHotelFiles implements ReadData {
 
+	private final String topic;
 	private final String folderPath;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private HotelInfo hi = new HotelInfo();
 
-	public ReadHotelFiles() {
+	public ReadHotelFiles(String topic) {
 		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			folderPath = "C:/hotel";
 		} else
 			folderPath = "/home/user/hotel";
+		this.topic = topic;
 	}
 
-	public ReadHotelFiles(String folderPath) {
+	public ReadHotelFiles(String folderPath, String topic) {
 		this.folderPath = folderPath;
+		this.topic = topic;
 	}
 
 	public void readHotelData() throws IOException {
@@ -45,17 +58,23 @@ public class ReadHotelFiles implements ReadData{
 		}
 		JsonReader jr;
 		JsonParser parser = new JsonParser();
-		// JsonElement element ;
 		for (String f : dataFolder.list()) {
 			System.out.println(f);
+			// parse json file to json object to be able to travers it
 			jr = new JsonReader(new FileReader(filemaker(f)));
 			JsonElement element = parser.parse(jr);
 			JsonObject jobj = element.getAsJsonObject();
-			// System.out.println(jobj.getAsJsonArray("Reviews"));
-			JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
-			for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
-				 System.out.println(es.getKey()+" : "+gson.fromJson(es.getValue(), String.class));
-			}
+
+			JsonArray reviews = jobj.getAsJsonArray("Reviews");
+
+			// request the hotel info sub-element to extract data
+			// JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
+			// extractHotelInfo(hotelInfo);
+
+			// for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
+			// System.out.println(es.getKey() + " : " +
+			// gson.fromJson(es.getValue(), String.class));
+			// }
 
 			// for( JsonElement arrelem:jobj.getAsJsonArray("Reviews")){
 			// JsonObject jo=arrelem.getAsJsonObject();
@@ -75,42 +94,46 @@ public class ReadHotelFiles implements ReadData{
 
 	}
 
-	private void getHotelInfo(JsonObject hotelInfo) {
-		HotelObj hobj = new HotelObj();
+	/* iterate through the reviews to find sentiment about a topic */
+	private void topicSearch(JsonArray reviews) {
+		for (JsonElement r : reviews) {
+			// TODO look in the comments for the topic
+			// if found, try to determine with points its value
+			// store some data about it
+		}
+	}
+
+	private void extractHotelInfo(JsonObject hotelInfo) {
+
 		for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
 			switch (es.getKey()) {
 			case "Name":
-				hobj.setName(gson.fromJson(es.getValue(), String.class));
+				hi.setName(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "HotelURL":
-				hobj.setUrl(gson.fromJson(es.getValue(), String.class));
+				hi.setUrl(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "Address":
-				hobj.setHtmlAddress(gson.fromJson(es.getValue(), String.class));
+				hi.setHtmlAddress(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "HotelID":
-				hobj.setName(gson.fromJson(es.getValue(), String.class));
+				hi.setName(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "ImgURL":
-				hobj.setImgUrl(gson.fromJson(es.getValue(), String.class));
+				hi.setImgUrl(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "Price":
-				//TODO get the price string and elaborate
-				hobj.setName(gson.fromJson(es.getValue(), String.class));
+				hi.setPrice(gson.fromJson(es.getValue(), String.class));
 				break;
+
+			// default:
+			// System.out.println("No attribute");
+			// break;
 			}
-			// System.out.println(es.getKey()+" "+es.getValue());
 		}
 
 	}
 
-	
-	private double[] priceEstimation(String priceStr){
-		double[] priceUpDown= new double[2];
-		
-		return priceUpDown;
-	}
-	
 	private String filemaker(String f) {
 		return folderPath + "/" + f;
 	}
@@ -118,7 +141,7 @@ public class ReadHotelFiles implements ReadData{
 	@Override
 	public HotelInfo getHotelInfo() {
 		// TODO Auto-generated method stub
-		return null;
+		return hi;
 	}
 
 	@Override
