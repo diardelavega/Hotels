@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.eclipse.jdt.internal.compiler.ast.InstanceOfExpression;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,7 +37,9 @@ public class ReadHotelFiles implements ReadData {
 	private final String topic;
 	private final String folderPath;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
 	private HotelInfo hi = new HotelInfo();
+	private Map<String, CountNValue> attCNV = new HashMap<>();
 
 	public ReadHotelFiles(String topic) {
 		if (System.getProperty("os.name").toLowerCase().contains("win")) {
@@ -59,48 +64,58 @@ public class ReadHotelFiles implements ReadData {
 		JsonReader jr;
 		JsonParser parser = new JsonParser();
 		for (String f : dataFolder.list()) {
-			System.out.println(f);
+
 			// parse json file to json object to be able to travers it
 			jr = new JsonReader(new FileReader(filemaker(f)));
 			JsonElement element = parser.parse(jr);
 			JsonObject jobj = element.getAsJsonObject();
 
+			// go through the reviews to evaluate the hotel for a topic.
 			JsonArray reviews = jobj.getAsJsonArray("Reviews");
+			topicSearch(reviews);
+
+			// TEST print results
+			for (String key : attCNV.keySet()) {
+				System.out.printf("%s :  %.3f   \n", key, attCNV.get(key).properyAvgPoint());
+			}
 
 			// request the hotel info sub-element to extract data
 			// JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
 			// extractHotelInfo(hotelInfo);
 
-			// for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
-			// System.out.println(es.getKey() + " : " +
-			// gson.fromJson(es.getValue(), String.class));
-			// }
-
-			// for( JsonElement arrelem:jobj.getAsJsonArray("Reviews")){
-			// JsonObject jo=arrelem.getAsJsonObject();
-			// System.out.println(jo);
-			// }
-			// Set<Map.Entry<String, JsonElement>> entries =
-			// jobj.entrySet();//will return members of your object
-			// for (Map.Entry<String, JsonElement> entry: entries) {
-			// System.out.println(entry.getKey()+" : "+entry.getValue());
-			//
-			// }
-			// Object el = gson.fromJson(jr, Object.class);
-			// while(jr.hasNext()){
-			// System.out.println(jr.nextName());
-			// }
 		}
 
 	}
 
 	/* iterate through the reviews to find sentiment about a topic */
 	private void topicSearch(JsonArray reviews) {
-		for (JsonElement r : reviews) {
+		for (JsonElement rev : reviews) {
+			JsonObject revobj = rev.getAsJsonObject();
+			JsonObject rating = revobj.getAsJsonObject("Ratings");
+			extractAttributeRatings(rating);
+
 			// TODO look in the comments for the topic
+
 			// if found, try to determine with points its value
 			// store some data about it
 		}
+	}
+
+	/*
+	 * go through every hotel attribute evaluated by the user, to produce a
+	 * better idea about the hotel general/common services
+	 */
+	private void extractAttributeRatings(JsonObject rating) {
+		for (Map.Entry<String, JsonElement> entry : rating.entrySet()) {
+			if (attCNV.containsKey(entry.getKey()))
+				attCNV.get(entry.getKey()).addValCount(Double.parseDouble(entry.getValue().getAsString()));
+			else {
+				CountNValue cnv = new CountNValue();
+				cnv.addValCount(Double.parseDouble(entry.getValue().getAsString()));
+				attCNV.put(entry.getKey().toString(), cnv);
+			} // else
+		} // for
+
 	}
 
 	private void extractHotelInfo(JsonObject hotelInfo) {

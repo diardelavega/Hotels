@@ -19,10 +19,6 @@ public class CountNValue {
 	private int propertyCount = 0;
 	private double valueSum = 0;
 
-	public CountNValue() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
 
 	public void addValCount(double userVal) {
 		propertyCount++;

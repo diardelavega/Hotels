@@ -11,11 +11,11 @@ public class Demo {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		// System.out.println("AAAA");
-		// ReadHotelFiles rhf = new ReadHotelFiles();
-		// rhf.readHotelData();
+		 ReadHotelFiles rhf = new ReadHotelFiles("aaa");
+		 rhf.readHotelData();
 
 		// wordBreaks();
-		sentenceBreaks();
+//		sentenceBreaks();
 	}
 
 	public static void wordBreaks() {
