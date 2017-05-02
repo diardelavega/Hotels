@@ -108,10 +108,10 @@ public class ReadHotelFiles implements ReadData {
 	private void extractAttributeRatings(JsonObject rating) {
 		for (Map.Entry<String, JsonElement> entry : rating.entrySet()) {
 			if (attCNV.containsKey(entry.getKey()))
-				attCNV.get(entry.getKey()).addValCount(Double.parseDouble(entry.getValue().getAsString()));
+				attCNV.get(entry.getKey()).addValCount(Float.parseFloat(entry.getValue().getAsString()));
 			else {
 				CountNValue cnv = new CountNValue();
-				cnv.addValCount(Double.parseDouble(entry.getValue().getAsString()));
+				cnv.addValCount(Float.parseFloat(entry.getValue().getAsString()));
 				attCNV.put(entry.getKey().toString(), cnv);
 			} // else
 		} // for

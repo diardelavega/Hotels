@@ -17,10 +17,10 @@ package objects;
 public class CountNValue {
 
 	private int propertyCount = 0;
-	private double valueSum = 0;
+	private float valueSum = 0;
 
 
-	public void addValCount(double userVal) {
+	public void addValCount(float userVal) {
 		propertyCount++;
 		valueSum += userVal;
 
@@ -30,11 +30,11 @@ public class CountNValue {
 		return propertyCount;
 	}
 
-	public double getValueSum() {
+	public float getValueSum() {
 		return valueSum;
 	}
 
-	public double properyAvgPoint() {
+	public float properyAvgPoint() {
 		return valueSum / propertyCount;
 	}
 

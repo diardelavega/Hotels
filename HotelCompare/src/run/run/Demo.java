@@ -5,15 +5,19 @@ import java.text.BreakIterator;
 import java.util.Locale;
 
 import operations.ReadHotelFiles;
+import utils.Commons;
 
 public class Demo {
 
 	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
-		// System.out.println("AAAA");
-		 ReadHotelFiles rhf = new ReadHotelFiles("aaa");
-		 rhf.readHotelData();
+//		 ReadHotelFiles rhf = new ReadHotelFiles("aaa");
+//		 rhf.readHotelData();
 
+		
+		Commons.init();
+		
+		
+		
 		// wordBreaks();
 //		sentenceBreaks();
 	}

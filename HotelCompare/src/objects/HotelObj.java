@@ -22,7 +22,7 @@ public class HotelObj {
 	// topic sentiment point <topicName, <point/sentence/review_info>>
 	private Map<String, TopicSentiment> topicInfo = new HashMap<>();
 
-	public double getAttributeAvgPoint(String attribute) {
+	public float getAttributeAvgPoint(String attribute) {
 		return attributes.get(attribute).properyAvgPoint();
 	}
 
@@ -30,7 +30,7 @@ public class HotelObj {
 	 * add automatically the value of the attribute to it's allready existing
 	 * count and sum values
 	 */
-	public void addAttributeUserValue(String attribute, double val) {
+	public void addAttributeUserValue(String attribute, float val) {
 		attributes.get(attribute).addValCount(val);
 	}
 
