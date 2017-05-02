@@ -94,10 +94,11 @@ public class ReadHotelFiles implements ReadData {
 			JsonObject rating = revobj.getAsJsonObject("Ratings");
 			extractAttributeRatings(rating);
 
-			// TODO look in the comments for the topic
-
-			// if found, try to determine with points its value
-			// store some data about it
+			
+			
+			String comment= revobj.get("Content").getAsString();
+			TopicSearchEvaluation tse = new TopicSearchEvaluation();
+			tse.perSentenceSearch(comment, topic);
 		}
 	}
 

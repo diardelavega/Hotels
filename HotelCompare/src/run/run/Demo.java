@@ -10,11 +10,13 @@ import utils.Commons;
 public class Demo {
 
 	public static void main(String[] args) throws IOException {
-//		 ReadHotelFiles rhf = new ReadHotelFiles("aaa");
-//		 rhf.readHotelData();
+		Commons.init();// init semantic data structs
+		
+		 ReadHotelFiles rhf = new ReadHotelFiles("breakfast");
+		 rhf.readHotelData();
 
 		
-		Commons.init();
+		
 		
 		
 		

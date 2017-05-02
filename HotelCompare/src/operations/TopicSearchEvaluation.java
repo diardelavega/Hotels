@@ -14,14 +14,13 @@ import utils.Commons;
  */
 public class TopicSearchEvaluation {
 
-	private float multiplier=0;
-	
-	
+	private float commentSentiment = 0;
+
 	/*
 	 * separate every sentence in the comment and examin them individually to
 	 * spot the search topic
 	 */
-	public void sentenceBreak(String comment, String topic) {
+	public void perSentenceSearch(String comment, String topic) {
 
 		Locale locale = Locale.UK;
 		BreakIterator breakIterator = BreakIterator.getSentenceInstance(locale);
@@ -33,10 +32,11 @@ public class TopicSearchEvaluation {
 
 		while (end != BreakIterator.DONE) {
 			sentence = comment.substring(start, end);
-			foundFlag = wordBreak(sentence, topic, 0);
+			foundFlag = topicSearch(sentence, topic);
 			if (foundFlag) {
+				System.out.printf("%s   %b \n", sentence, foundFlag);
 				// loop the sentence and search for semantic corresponding words
-				wordBreak(sentence, topic, 1);
+				commentSentiment += semanticSearch(sentence);
 			}
 			start = end;
 			end = breakIterator.next();
@@ -48,7 +48,7 @@ public class TopicSearchEvaluation {
 	 * determine the semantic meaning by utilizing the semantic file key words
 	 * and their values.
 	 */
-	public boolean wordBreak(String sent, String searchTerm, int searchCategory) {
+	private boolean topicSearch(String sent, String searchTerm) {
 		boolean foundTopicFlag = false;
 		Locale locale = Locale.UK;
 		BreakIterator breakIterator = BreakIterator.getWordInstance(locale);
@@ -59,25 +59,78 @@ public class TopicSearchEvaluation {
 		String word;
 		while (end != BreakIterator.DONE) {
 			word = sent.substring(start, end);
-			if (searchCategory == 0) {// searching for hotel topic
-				if (word.equalsIgnoreCase(searchTerm)) {
-					foundTopicFlag = true;
-					break;
-				}
-			} else if (searchCategory == 1) {// search for semantic meaning
-				if (Commons.intensifiers.containsKey(word)) {
-
-				}
-			}// else if
-			
+			if (word.equalsIgnoreCase(searchTerm)) {
+				foundTopicFlag = true;
+				break;
+			}
 			start = end;
 			end = breakIterator.next();
 		}
 		return foundTopicFlag;
 	}
 
-	private void sentimentEvaluation(String sentence) {
+	/*
+	 * This function determines if the sentiment in the sentence, in which the
+	 * search-topic is mentioned. For every word in the sentence check in the
+	 * Commons semantic structures to see if it's a semantically valuable word
+	 * and consider it for the numerical evaluation of the topic sentiment.
+	 */
+	private float semanticSearch(String sent) {
+		/**
+		 * From a syntactical point of view of the English language (in which
+		 * language the comments are), the intensifiers normally would go in
+		 * front of the adjective or phrase that it is trying to emphasize. The
+		 * way this function works is by getting the intensifiers of the
+		 * sentence first and multiplying that to the first semantically
+		 * positive or negative phrase. After that intent to emphasize has been
+		 * applied to a phrase then the multiplier (the numerical value of the
+		 * intensifier) becomes 0 and it is ready to find another positive or
+		 * negative instance to apply emphases to.
+		 */
 
+		// values for the numerical representation of sentiment in the sentence
+		float sentMultyplier = 0;
+		float sentencePositive = 0;
+		float sentenceNegative = 0;
+
+		Locale locale = Locale.UK;
+		BreakIterator breakIterator = BreakIterator.getWordInstance(locale);
+		breakIterator.setText(sent);
+
+		int start = breakIterator.first();
+		int end = breakIterator.next();
+		String word;
+		while (end != BreakIterator.DONE) {
+			if (end - start <= 2) {// skip small words{
+				start = end;
+				end = breakIterator.next();
+				continue;
+			}
+			word = sent.substring(start, end).toLowerCase();
+
+			if (Commons.intensifiers.containsKey(word)) {
+				sentMultyplier += Commons.intensifiers.get(word);
+			} else if (Commons.positive.containsKey(word)) {
+				if (sentMultyplier != 0) {
+					sentencePositive += sentMultyplier * Commons.positive.get(word);
+					sentMultyplier = 0;
+				} else {
+					sentencePositive += Commons.positive.get(word);
+				}
+			} else if (Commons.negative.containsKey(word)) {
+				if (sentMultyplier != 0) {
+					sentenceNegative += sentMultyplier * Commons.negative.get(word);
+				} else {
+					sentenceNegative += Commons.negative.get(word);
+					sentMultyplier = 0;
+				}
+			}
+
+			start = end;
+			end = breakIterator.next();
+		}
+		System.out.printf("pos : %.2f,   neg: %.2f \n", sentencePositive, sentenceNegative);
+		return (sentencePositive - sentenceNegative);
 	}
 
 	/**
