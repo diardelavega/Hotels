@@ -47,4 +47,16 @@ public class HotelObj {
 		attributes.put(attribute, cnv);
 	}
 
+	public void setInfo(HotelInfo info) {
+		this.info = info;
+	}
+
+	public void setAttributes(Map<String, CountNValue> attributes) {
+		this.attributes = attributes;
+	}
+
+	public void setTopicInfo(Map<String, TopicSentiment> topicInfo) {
+		this.topicInfo = topicInfo;
+	}
+
 }

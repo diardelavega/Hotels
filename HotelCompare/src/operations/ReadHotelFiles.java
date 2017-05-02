@@ -34,77 +34,66 @@ import objects.TopicSentiment;
  */
 public class ReadHotelFiles implements ReadData {
 
-	private final String topic;
-	private final String folderPath;
+	// private final String topic;
+	// private final String folderPath;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private HotelInfo hi = new HotelInfo();
 	private Map<String, CountNValue> attCNV = new HashMap<>();
 
 	public ReadHotelFiles(String topic) {
-		if (System.getProperty("os.name").toLowerCase().contains("win")) {
-			folderPath = "C:/hotel";
-		} else
-			folderPath = "/home/user/hotel";
-		this.topic = topic;
+		// if (System.getProperty("os.name").toLowerCase().contains("win")) {
+		// folderPath = "C:/hotel";
+		// } else
+		// folderPath = "/home/user/hotel";
+		// this.topic = topic;
 	}
 
-	public ReadHotelFiles(String folderPath, String topic) {
-		this.folderPath = folderPath;
-		this.topic = topic;
+	public ReadHotelFiles() {
 	}
 
-	public void readHotelData() throws IOException {
+	public void readHotelData(String fileName, String topic) throws IOException {
 
-		File dataFolder = new File(folderPath);
-		if (!dataFolder.isDirectory()) {
-			System.out.println("This is not a directories path");
-			return;
-		}
 		JsonReader jr;
 		JsonParser parser = new JsonParser();
-		for (String f : dataFolder.list()) {
 
-			// parse json file to json object to be able to travers it
-			jr = new JsonReader(new FileReader(filemaker(f)));
-			JsonElement element = parser.parse(jr);
-			JsonObject jobj = element.getAsJsonObject();
+		// parse json file to json object to be able to travers it
+		jr = new JsonReader(new FileReader(fileName));
+		JsonObject jobj = parser.parse(jr).getAsJsonObject();
 
-			// go through the reviews to evaluate the hotel for a topic.
-			JsonArray reviews = jobj.getAsJsonArray("Reviews");
-			topicSearch(reviews);
+		// go through the reviews to evaluate the hotel for a topic.
+		JsonArray reviews = jobj.getAsJsonArray("Reviews");
+		topicSearch(reviews, topic);
 
-			// TEST print results
-			for (String key : attCNV.keySet()) {
-				System.out.printf("%s :  %.3f   \n", key, attCNV.get(key).properyAvgPoint());
-			}
-
-			// request the hotel info sub-element to extract data
-			// JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
-			// extractHotelInfo(hotelInfo);
-
-		}
+		// request the hotel info sub-element for the HotelInfo obj.
+		JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
+		extractHotelInfo(hotelInfo);
 
 	}
 
-	/* iterate through the reviews to find sentiment about a topic */
-	private void topicSearch(JsonArray reviews) {
+	/*
+	 * iterate through the reviews to find sentiment about a topic and get the
+	 * ratings for hotel attributes
+	 */
+	private void topicSearch(JsonArray reviews, String topic) {
+		TopicSearchEvaluation tse = new TopicSearchEvaluation();
+
 		for (JsonElement rev : reviews) {
 			JsonObject revobj = rev.getAsJsonObject();
+
+			// get the ratings for the evaluated hotel attributes
 			JsonObject rating = revobj.getAsJsonObject("Ratings");
 			extractAttributeRatings(rating);
 
-			
-			
-			String comment= revobj.get("Content").getAsString();
-			TopicSearchEvaluation tse = new TopicSearchEvaluation();
+			// estimate the topic sentiment from the comments
+			String comment = revobj.get("Content").getAsString();
 			tse.perSentenceSearch(comment, topic);
 		}
 	}
 
 	/*
-	 * go through every hotel attribute evaluated by the user, to produce a
-	 * better idea about the hotel general/common services
+	 * go through every hotel attributes rated by the user, to produce a better
+	 * idea about the hotel general/common services
 	 */
 	private void extractAttributeRatings(JsonObject rating) {
 		for (Map.Entry<String, JsonElement> entry : rating.entrySet()) {
@@ -150,8 +139,12 @@ public class ReadHotelFiles implements ReadData {
 
 	}
 
-	private String filemaker(String f) {
-		return folderPath + "/" + f;
+	private void resultPrint() {
+		/*
+		 * // TEST print results for (String key : attCNV.keySet()) {
+		 * System.out.printf("%s :  %.3f   \n", key,
+		 * attCNV.get(key).properyAvgPoint()); }
+		 */
 	}
 
 	@Override
@@ -162,8 +155,7 @@ public class ReadHotelFiles implements ReadData {
 
 	@Override
 	public Map<String, CountNValue> getAttributes() {
-		// TODO Auto-generated method stub
-		return null;
+		return attCNV;
 	}
 
 	@Override
