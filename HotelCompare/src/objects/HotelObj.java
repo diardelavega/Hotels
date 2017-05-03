@@ -9,7 +9,7 @@ import java.util.Map;
  *         The class for object which will contain all the information regarding
  *         the a hotel whose reviews are being scanned to search for a topic
  *         information. The HotelObj has a map of the user evaluated hotel
- *         attributes, a map of the search topic with its estimation and general
+ *         attributes, results regarding the search topic with its estimation and general
  *         information about the hotel in hand.
  * 
  */
@@ -20,7 +20,7 @@ public class HotelObj {
 	private Map<String, CountNValue> attributes = new HashMap<>();
 
 	// topic sentiment point <topicName, <point/sentence/review_info>>
-	private Map<String, TopicSentiment> topicInfo = new HashMap<>();
+	private TopicSentimentResults tsr = new TopicSentimentResults();
 
 	public float getAttributeAvgPoint(String attribute) {
 		return attributes.get(attribute).properyAvgPoint();
@@ -55,8 +55,17 @@ public class HotelObj {
 		this.attributes = attributes;
 	}
 
-	public void setTopicInfo(Map<String, TopicSentiment> topicInfo) {
-		this.topicInfo = topicInfo;
+	public TopicSentimentResults getTsr() {
+		return tsr;
 	}
 
+	public void setTsr(TopicSentimentResults tsr) {
+		this.tsr = tsr;
+	}
+
+	public HotelInfo getInfo() {
+		return info;
+	}
+
+	
 }

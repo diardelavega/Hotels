@@ -8,13 +8,16 @@ import utils.Commons;
 /**
  * @author Administrator
  * 
- *         search through the comment by breaking it down to sentences and in
- *         each of them look for the topic in hand and the semantic words that
- *         it may be associated with.
+ *         Search through the comment by breaking it down to sentences and in
+ *         each one of them look for the topic in hand and the semantic words
+ *         that it may be associated with.
  */
 public class TopicSearchEvaluation {
 
-	private float commentSentiment = 0;
+	private float commentPositiveSentimentPoints = 0;
+	private float commentNegativeSentimentPoints = 0;
+	private boolean foundFlag = false; // if the topic is mentioned in this comment
+	private String selectedSentence ;
 
 	/*
 	 * separate every sentence in the comment and examin them individually to
@@ -27,16 +30,20 @@ public class TopicSearchEvaluation {
 		breakIterator.setText(comment);
 		int start = breakIterator.first();
 		int end = breakIterator.next();
-		boolean foundFlag = false;
+
 		String sentence;
 
 		while (end != BreakIterator.DONE) {
 			sentence = comment.substring(start, end);
 			foundFlag = topicSearch(sentence, topic);
 			if (foundFlag) {
-				System.out.printf("%s   %b \n", sentence, foundFlag);
-				// loop the sentence and search for semantic corresponding words
-				commentSentiment += semanticSearch(sentence);
+				if(selectedSentence==null ||selectedSentence=="" || sentence.length() < selectedSentence.length())
+					selectedSentence = sentence;
+
+//				System.out.printf("%s   %b \n", sentence, foundFlag);
+				// loop the sentence and search for semantic words associated with
+				semanticSearch(sentence);
+
 			}
 			start = end;
 			end = breakIterator.next();
@@ -75,7 +82,7 @@ public class TopicSearchEvaluation {
 	 * Commons semantic structures to see if it's a semantically valuable word
 	 * and consider it for the numerical evaluation of the topic sentiment.
 	 */
-	private float semanticSearch(String sent) {
+	private void semanticSearch(String sent) {
 		/**
 		 * From a syntactical point of view of the English language (in which
 		 * language the comments are), the intensifiers normally would go in
@@ -129,10 +136,33 @@ public class TopicSearchEvaluation {
 			start = end;
 			end = breakIterator.next();
 		}
-		System.out.printf("pos : %.2f,   neg: %.2f \n", sentencePositive, sentenceNegative);
-		return (sentencePositive - sentenceNegative);
+//		System.out.printf("pos : %.2f,   neg: %.2f \n", sentencePositive, sentenceNegative);
+		commentPositiveSentimentPoints += sentencePositive;
+		commentNegativeSentimentPoints += sentenceNegative;
 	}
 
+
+	public float getCommentPositiveSentimentPoints() {
+		return commentPositiveSentimentPoints;
+	}
+
+
+	public float getCommentNegativeSentimentPoints() {
+		return commentNegativeSentimentPoints;
+	}
+
+
+	public boolean isFoundFlag() {
+		return foundFlag;
+	}
+
+	
+public String getSelectedSentence() {
+		return selectedSentence;
+	}
+
+	
+	
 	/**
 	 * POSIBLE EXTENTIONS**************************************************
 	 * 

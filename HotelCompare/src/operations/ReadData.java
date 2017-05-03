@@ -4,12 +4,12 @@ import java.util.Map;
 
 import objects.CountNValue;
 import objects.HotelInfo;
-import objects.TopicSentiment;
+import objects.TopicSentimentResults;
 
 public interface ReadData {
 	public HotelInfo getHotelInfo();
 
 	public Map<String, CountNValue> getAttributes();
 
-	public Map<String, TopicSentiment> getTopicMap();
+	public TopicSentimentResults getTopicResults();
 }

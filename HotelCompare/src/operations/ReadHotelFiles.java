@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,7 +23,8 @@ import com.google.gson.stream.JsonReader;
 import objects.CountNValue;
 import objects.HotelInfo;
 import objects.HotelObj;
-import objects.TopicSentiment;
+import objects.ReviewInfo;
+import objects.TopicSentimentResults;
 
 /**
  * @author Administrator
@@ -34,41 +36,32 @@ import objects.TopicSentiment;
  */
 public class ReadHotelFiles implements ReadData {
 
-	// private final String topic;
-	// private final String folderPath;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private HotelInfo hi = new HotelInfo();
 	private Map<String, CountNValue> attCNV = new HashMap<>();
+	private TopicSentimentResults tsr = new TopicSentimentResults();
 
-	public ReadHotelFiles(String topic) {
-		// if (System.getProperty("os.name").toLowerCase().contains("win")) {
-		// folderPath = "C:/hotel";
-		// } else
-		// folderPath = "/home/user/hotel";
-		// this.topic = topic;
-	}
-
-	public ReadHotelFiles() {
-	}
-
-	public void readHotelData(String fileName, String topic) throws IOException {
-
+	public int readHotelData(String fileName, String topic) throws IOException {
+		tsr.setTopic(topic);
 		JsonReader jr;
 		JsonParser parser = new JsonParser();
 
 		// parse json file to json object to be able to travers it
-		jr = new JsonReader(new FileReader(fileName));
+		File file = new File(fileName);
+		if (!file.isFile())
+			return -1;
+		jr = new JsonReader(new FileReader(file));
 		JsonObject jobj = parser.parse(jr).getAsJsonObject();
-
-		// go through the reviews to evaluate the hotel for a topic.
-		JsonArray reviews = jobj.getAsJsonArray("Reviews");
-		topicSearch(reviews, topic);
 
 		// request the hotel info sub-element for the HotelInfo obj.
 		JsonObject hotelInfo = jobj.getAsJsonObject("HotelInfo");
 		extractHotelInfo(hotelInfo);
 
+		// go through the reviews to evaluate the hotel for a topic.
+		JsonArray reviews = jobj.getAsJsonArray("Reviews");
+		topicSearch(reviews, topic);
+		return 0;
 	}
 
 	/*
@@ -76,18 +69,27 @@ public class ReadHotelFiles implements ReadData {
 	 * ratings for hotel attributes
 	 */
 	private void topicSearch(JsonArray reviews, String topic) {
-		TopicSearchEvaluation tse = new TopicSearchEvaluation();
+		TopicSearchEvaluation tse;
 
 		for (JsonElement rev : reviews) {
+			tse = new TopicSearchEvaluation();
 			JsonObject revobj = rev.getAsJsonObject();
 
 			// get the ratings for the evaluated hotel attributes
 			JsonObject rating = revobj.getAsJsonObject("Ratings");
-			extractAttributeRatings(rating);
+			extractAttributeRatings(rating);// add to attCNV map
 
 			// estimate the topic sentiment from the comments
 			String comment = revobj.get("Content").getAsString();
 			tse.perSentenceSearch(comment, topic);
+			if (tse.isFoundFlag()) {
+				tsr.countTopicMentions();
+				tsr.addToPositiveSentimentScore(tse.getCommentPositiveSentimentPoints());
+				tsr.addToNegativeSentimentScore(tse.getCommentNegativeSentimentPoints());
+				ReviewInfo rvi = extractReviewInfo(revobj);
+				rvi.setSelectedSentence(tse.getSelectedSentence());
+				tsr.addRepresentativeReview(rvi);
+			}
 		}
 	}
 
@@ -108,9 +110,33 @@ public class ReadHotelFiles implements ReadData {
 
 	}
 
-	private void extractHotelInfo(JsonObject hotelInfo) {
-
+	private ReviewInfo extractReviewInfo(JsonObject hotelInfo) {
+		ReviewInfo rvi = new ReviewInfo();
 		for (Entry<String, JsonElement> es : hotelInfo.entrySet()) {
+			switch (es.getKey()) {
+			case "Title":
+				rvi.setReviewTitle(gson.fromJson(es.getValue(), String.class));
+				break;
+			case "Author":
+				rvi.setAuthName(gson.fromJson(es.getValue(), String.class));
+				break;
+			case "ReviewID":
+				rvi.setReviewId(gson.fromJson(es.getValue(), String.class));
+				break;
+			case "AuthorLocation":
+				rvi.setAuthLocation(gson.fromJson(es.getValue(), String.class));
+				break;
+			case "Date":
+				rvi.setDate(gson.fromJson(es.getValue(), String.class));
+				break;
+			}
+		} // for
+
+		return rvi;
+	}
+
+	private void extractHotelInfo(JsonObject revobj) {
+		for (Entry<String, JsonElement> es : revobj.entrySet()) {
 			switch (es.getKey()) {
 			case "Name":
 				hi.setName(gson.fromJson(es.getValue(), String.class));
@@ -122,7 +148,7 @@ public class ReadHotelFiles implements ReadData {
 				hi.setHtmlAddress(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "HotelID":
-				hi.setName(gson.fromJson(es.getValue(), String.class));
+				hi.setId(gson.fromJson(es.getValue(), String.class));
 				break;
 			case "ImgURL":
 				hi.setImgUrl(gson.fromJson(es.getValue(), String.class));
@@ -130,13 +156,8 @@ public class ReadHotelFiles implements ReadData {
 			case "Price":
 				hi.setPrice(gson.fromJson(es.getValue(), String.class));
 				break;
-
-			// default:
-			// System.out.println("No attribute");
-			// break;
 			}
 		}
-
 	}
 
 	private void resultPrint() {
@@ -159,8 +180,8 @@ public class ReadHotelFiles implements ReadData {
 	}
 
 	@Override
-	public Map<String, TopicSentiment> getTopicMap() {
-		// TODO Auto-generated method stub
-		return null;
+	public TopicSentimentResults getTopicResults() {
+		return tsr;
 	}
+
 }
