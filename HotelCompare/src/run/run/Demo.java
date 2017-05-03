@@ -15,7 +15,7 @@ import utils.Commons;
 public class Demo {
 
 	public static void main(String[] args) throws IOException {
-		System.out.println("args: " + args);
+
 		demoRun(args);
 	}
 
@@ -35,13 +35,12 @@ public class Demo {
 			}
 
 			String topic = args[1];
-			ReadHotelFiles rhf ;
+			ReadHotelFiles rhf;
 
 			List<HotelObj> hotelList = new ArrayList<>();
 			for (String f : dataFolder.list()) {
-				
+
 				String fileName = folderPath + "/" + f;
-				System.out.println(fileName );
 				HotelObj hotel = new HotelObj();
 				rhf = new ReadHotelFiles();
 				if (rhf.readHotelData(fileName, topic) != -1) {
@@ -56,14 +55,17 @@ public class Demo {
 			// TODO sort by topicPoint
 			// print results;
 			// CompareTopic ct= new CompareTopic();
-			for (int i = 0; i < hotelList.size(); i++) {
-				System.out.printf("%s, points= %.3f \n", hotelList.get(i).getInfo().getName(),hotelList.get(i).getTsr().getTotalSentimentPoints());
-			}
-			System.out.println("-------------------");
+			// for (int i = 0; i < hotelList.size(); i++) {
+			// System.out.printf("%s, points= %.3f \n",
+			// hotelList.get(i).getInfo().getName(),hotelList.get(i).getTsr().getTotalSentimentPoints());
+			// }
+			// System.out.println("-------------------");
 			Collections.sort(hotelList, new CompareTopic());
 			for (int i = 0; i < hotelList.size(); i++) {
-				System.out.printf("%s, points= %.3f \n", hotelList.get(i).getInfo().getName(),hotelList.get(i).getTsr().getTotalSentimentPoints());
+				System.out.printf("Hotel: %s, points= %.3f \n", hotelList.get(i).getInfo().getName(), hotelList.get(i).getTsr().getTotalSentimentPoints());
+				hotelList.get(i).getTsr().printExample();
 			}
+			System.out.println();
 		}
 
 	}

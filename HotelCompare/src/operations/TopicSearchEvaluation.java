@@ -127,12 +127,17 @@ public class TopicSearchEvaluation {
 			} else if (Commons.negative.containsKey(word)) {
 				if (sentMultyplier != 0) {
 					sentenceNegative += sentMultyplier * Commons.negative.get(word);
+					sentMultyplier = 0;
 				} else {
 					sentenceNegative += Commons.negative.get(word);
-					sentMultyplier = 0;
 				}
 			}
-
+//			if (curentSentiment>0)
+//				sentencePositive+=curentSentiment;
+//			else 
+//				sentenceNegative+=curentSentiment;
+//			curentSentiment=0;
+			
 			start = end;
 			end = breakIterator.next();
 		}
