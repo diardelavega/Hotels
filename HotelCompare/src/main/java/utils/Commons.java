@@ -21,8 +21,8 @@ public class Commons {
 	public static Map<String, Float> negative = null;
 	public static Map<String, Float> intensifiers = null;
 
-	public static void init() throws FileNotFoundException {
-		String filename = "C:/hotel/Semantic/semantics.json";
+	public static void init(String filename) throws FileNotFoundException {
+//		String filename = "C:/hotel/Semantic/semantics.json";
 		File f = new File(filename);
 		if (!f.exists()) {
 			throw new FileNotFoundException();

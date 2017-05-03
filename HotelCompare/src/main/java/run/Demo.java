@@ -20,13 +20,13 @@ public class Demo {
 	}
 
 	public static void demoRun(String[] args) throws IOException {
-		Commons.init();// init semantic data structs
+		
 		if (args == null ||args.length<2) {
 			args = new String[2];
-			args[0] = "C:/hotel";
+			args[0] = "C:/Users/diego/Desktop/challange";
 			args[1] = "breakfast";
 		}
-		
+		Commons.init(args[0]);// init semantic data structs
 		if (args.length > 0) {
 			String folderPath = args[0];
 			File dataFolder = new File(folderPath);
