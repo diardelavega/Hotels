@@ -23,6 +23,7 @@ public class Commons {
 
 	public static void init(String filename) throws FileNotFoundException {
 //		String filename = "C:/hotel/Semantic/semantics.json";
+		filename+="/Semantic/semantics.json";
 		File f = new File(filename);
 		if (!f.exists()) {
 			throw new FileNotFoundException();
