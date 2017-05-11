@@ -1,3 +1,6 @@
+newer version with the use of open-nlp @ https://github.com/diardelavega/V3
+
+
 This is a tool for hotel comparison based on a specific topic.
 The evaluation for that topic is done by searching in the comments of the reviews left from previous users
 
@@ -7,7 +10,7 @@ to run requires:
 
 -forder structure as shown below
 Dir*
-|____reviw1.json, review2.json …. , , , , (.json files)
+|____reviw1.json, review2.json â€¦. , , , , (.json files)
 |
 |______Semantic (directory)
 | |
