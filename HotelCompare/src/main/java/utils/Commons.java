@@ -1,8 +1,12 @@
 package utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,17 +16,61 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
+import opennlp.tools.cmdline.postag.POSModelLoader;
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.stemmer.PorterStemmer;
+
 /**
  * @author Administrator this class will contain structures that load the
- *         semantic file informations
+ *         semantic file informations. It also initializes and supplies models
+ *         for the sentence tokenization and pos tagger of the nlp package.
  */
 public class Commons {
 	public static Map<String, Float> positive = null;
 	public static Map<String, Float> negative = null;
 	public static Map<String, Float> intensifiers = null;
 
-	public static void init(String filename) throws FileNotFoundException {
-//		String filename = "C:/hotel/Semantic/semantics.json";
+	private static SentenceDetectorME sdetector;
+	private static POSTaggerME tagger;
+
+	private static String sentenceTokenizerPath;
+	private static String posTaggerPath;
+
+	public static SentenceDetectorME getSentenceDetectorME() throws IOException {
+		if (sdetector == null) {
+			InputStream is = new FileInputStream(sentenceTokenizerPath);
+			SentenceModel model = new SentenceModel(is);
+			sdetector = new SentenceDetectorME(model);
+		}
+		return sdetector;
+	}
+
+	public static POSTaggerME getPOSTaggerME() throws IOException {
+		if (tagger == null) {
+			File f = new File(posTaggerPath);
+			if (!f.exists())
+				throw new FileNotFoundException("POS tagger model file not found");
+
+			POSModel pmodel = new POSModelLoader().load(f);
+			tagger = new POSTaggerME(pmodel);
+		}
+		return tagger;
+	}
+
+	/*
+	 * read the data from the json file and and stem them to find them in the
+	 * stemmed comment words. Phrases with multiple will not be stemmed as they
+	 * are considered phrases/expressions that go togather as they are.
+	 */
+	public static void init(String filename, String sentenceToken, String posTag) throws FileNotFoundException {
+		// initialize the model file path for the opennlp libraries
+		sentenceTokenizerPath = sentenceToken;
+		posTaggerPath = posTag;
+
+		filename += "/Semantic/semantics.json";
 		File f = new File(filename);
 		if (!f.exists()) {
 			throw new FileNotFoundException();
@@ -32,36 +80,55 @@ public class Commons {
 		JsonReader jr = new JsonReader(new FileReader(filename));
 		JsonElement element = parser.parse(jr);
 		JsonObject jobj = element.getAsJsonObject();
+		PorterStemmer ps = new PorterStemmer();
 
 		positive = new HashMap<String, Float>();
-		JsonArray pos = jobj.getAsJsonArray("positive");
-		for (JsonElement je : pos) {
-			JsonObject phraseValue = je.getAsJsonObject();
-			String phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
-			float val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
-			positive.put(phrase, val);
-			// System.out.printf("%s : %.3f \n", phrase, val);
+		JsonArray sentimentToPoint = jobj.getAsJsonArray("positive");
+		String phrase;
+		float val;
+		JsonObject phraseValue;
+		for (JsonElement je : sentimentToPoint) {
+			phraseValue = je.getAsJsonObject();
+			phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
+			if (phrase.contains(" ")) {// two rods or more
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
+				positive.put(phrase, val);
+			} else {
+				String stemPhrase = ps.stem(ps.stem(phrase));
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
+				positive.put(stemPhrase, val);
+			}
 		}
 
 		negative = new HashMap<String, Float>();
-		JsonArray neg = jobj.getAsJsonArray("negative");
-		for (JsonElement je : neg) {
-			JsonObject phraseValue = je.getAsJsonObject();
-			String phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
-			float val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
-			negative.put(phrase, val);
-			// System.out.printf("%s : %.3f \n", phrase, val);
+		sentimentToPoint = jobj.getAsJsonArray("negative");
+		for (JsonElement je : sentimentToPoint) {
+			phraseValue = je.getAsJsonObject();
+			phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
+			if (phrase.contains(" ")) {// two rods or more
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
+				negative.put(phrase, val);
+			} else {
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("value").getAsString());
+				String stemPhrase = ps.stem(ps.stem(phrase));
+				negative.put(stemPhrase, val);
+			}
 		}
 
 		intensifiers = new HashMap<String, Float>();
-		JsonArray intens = jobj.getAsJsonArray("intensifier");
-		for (JsonElement je : intens) {
-			JsonObject phraseValue = je.getAsJsonObject();
-			String phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
-			float val = Float.parseFloat(phraseValue.getAsJsonObject().get("multiplier").getAsString());
-			intensifiers.put(phrase, val);
-			// System.out.printf("%s : %.3f \n", phrase, val);
+		sentimentToPoint = jobj.getAsJsonArray("intensifier");
+		for (JsonElement je : sentimentToPoint) {
+			phraseValue = je.getAsJsonObject();
+			phrase = phraseValue.getAsJsonObject().get("phrase").getAsString();
+			if (phrase.contains(" ")) {// two rods or more
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("multiplier").getAsString());
+				intensifiers.put(phrase, val);
+			} else {
+				val = Float.parseFloat(phraseValue.getAsJsonObject().get("multiplier").getAsString());
+				String stemPhrase = ps.stem(ps.stem(phrase));
+				intensifiers.put(stemPhrase, val);
+			}
 		}
-
 	}
+
 }
