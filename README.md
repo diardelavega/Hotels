@@ -1,4 +1,4 @@
-# V3
+﻿# V3
 newer version with the use of open-nlp @ https://github.com/diardelavega/V3
 
 
@@ -26,4 +26,7 @@ It is run in the terminal, inside the project file (@ the pom.xml location)
 
 1) mvn clean install
 2) mvn clean compile assembly:single
-3) java -cp target/***.jar run.Demo "<the Dir* path>" "<some topic>"
+3) java -cp target/***.jar run.Demo -d "<the Dir* path>" -t "<some topic>" 
+	**) -d, -t are mandatory,
+	**) -i, -rd, -r, -s are optional and are used to show additional information
+about the hotel or reviews
